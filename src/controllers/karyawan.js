@@ -1,6 +1,5 @@
 const {profile} = require('../../models/')
 const Joi = require("joi");
-const router = require('../router');
 
 
 exports.register = async (req, res) => {
@@ -17,11 +16,23 @@ exports.register = async (req, res) => {
         if (error)
         return res.status(400).send({
             error: {
-                message: error.details[0].message,
+                message: error.details[0].path + ' cannot be empty',
             },
         });
 
         const request = req.body
+
+        const emailCheck = await profile.findOne({
+            where:{
+                email:req.body.email
+            }
+        })
+
+        if(emailCheck){
+            return res.send({
+                message:"email has registered"
+            })
+        }
         const data = await profile.create(request)
 
         res.status(201).send({
@@ -29,6 +40,7 @@ exports.register = async (req, res) => {
             data
         })
     } catch (error) {
+        console.log(error);
         res.status(400).send({
             status:"error",
             error
